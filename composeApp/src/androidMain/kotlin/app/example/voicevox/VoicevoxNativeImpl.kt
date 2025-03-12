@@ -2,7 +2,6 @@ package app.example.voicevox
 
 import android.media.MediaPlayer
 import app.example.MainActivity
-import app.example.voicevox.VoicevoxNative.Companion.STYLE_ID
 import co.touchlab.kermit.Logger
 import jp.hiroshiba.voicevoxcore.OpenJtalk
 import jp.hiroshiba.voicevoxcore.Synthesizer
@@ -22,32 +21,30 @@ class VoicevoxNativeImpl : VoicevoxNative {
         get() = applicationContext.cacheDir.toString()
     private val applicationContext get() = MainActivity.INSTANCE.applicationContext
     private var mediaPlayer: MediaPlayer? = null
+    private var isVoiceModelLoaded = false
 
-    override suspend fun speak(text: String, openJtalkDicDirPath: Path, vvmFilePath: Path) {
+    override suspend fun speak(text: String, wavFilePath: Path, openJtalkDicDirPath: Path, vvmFilePath: Path, styleId: Int) {
         withContext(Dispatchers.IO) {
             val synthesizer = makeSynthesizer(openJtalkDicDirPath)
             loadVoiceModelIfNeeded(synthesizer, vvmFilePath)
-            val wavFilePath = tempWavPath
 
             // wavファイル作成
             val wavFile = File(wavFilePath.toString())
 
             // 音声合成
             val audioQuery = try {
-                synthesizer.createAudioQuery(text, STYLE_ID)
+                synthesizer.createAudioQuery(text, styleId)
             } catch (e: Exception) {
                 Logger.e("Failed to createAudioQuery", e)
                 return@withContext
             }
-
-            val wavData = synthesizer.synthesis(audioQuery, STYLE_ID).execute()
+            val wavData = synthesizer.synthesis(audioQuery, styleId).execute()
             val fos = FileOutputStream(wavFile)
             fos.write(wavData)
             fos.close()
 
+            // 再生
             playWavFile(wavFilePath)
-
-            wavFile.delete()
         }
     }
 
@@ -60,8 +57,6 @@ class VoicevoxNativeImpl : VoicevoxNative {
             .build()
         return synthesizer
     }
-
-    private var isVoiceModelLoaded = false
 
     private fun loadVoiceModelIfNeeded(synthesizer: Synthesizer, vvmPath: Path) {
         if (isVoiceModelLoaded) return

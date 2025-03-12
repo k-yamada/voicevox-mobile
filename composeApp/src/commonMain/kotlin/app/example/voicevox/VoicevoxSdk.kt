@@ -22,7 +22,9 @@ class VoicevoxSdk(
     suspend fun speak(text: String) {
         downloadOpenJtalkDicIfNeeded()
         downloadVvmFileIfNeeded()
-        native.speak(text = text, openJtalkDicDirPath = openJtalkDicDirPath, vvmFilePath = vvmFilePath)
+        val wavFilePath = "${native.cacheDir}/temp.wav".toPath()
+        native.speak(text = text, wavFilePath = wavFilePath, openJtalkDicDirPath = openJtalkDicDirPath, vvmFilePath = vvmFilePath, styleId = STYLE_ID)
+        FileSystem.SYSTEM.delete(wavFilePath)
     }
 
     private suspend fun downloadOpenJtalkDicIfNeeded() {
@@ -71,5 +73,6 @@ class VoicevoxSdk(
         const val OPEN_JTALK_DIC_DIR = "open_jtalk_dic"
         const val MODEL_DIR = "voicevox_model"
         const val VVM_FILE_NAME = "0.vvm"
+        const val STYLE_ID = 3
     }
 }

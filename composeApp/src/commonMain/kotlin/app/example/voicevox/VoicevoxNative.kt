@@ -1,7 +1,6 @@
 package app.example.voicevox
 
 import okio.Path
-import okio.Path.Companion.toPath
 
 interface VoicevoxNative {
     /** VOICEVOXの音声モデル等を保存するディレクトリ */
@@ -13,11 +12,5 @@ interface VoicevoxNative {
      */
     val cacheDir: String
 
-    suspend fun speak(text: String, openJtalkDicDirPath: Path, vvmFilePath: Path)
-
-    val tempWavPath: Path get() = "${cacheDir}/temp.wav".toPath()
-
-    companion object {
-        const val STYLE_ID = 3
-    }
+    suspend fun speak(text: String, wavFilePath: Path, openJtalkDicDirPath: Path, vvmFilePath: Path, styleId: Int)
 }
