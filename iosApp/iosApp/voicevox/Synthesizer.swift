@@ -4,8 +4,8 @@ import voicevox_core
 public class Synthesizer {
     var ptr: OpaquePointer?
 
-    public init(openJtalk: OpenJtalkRc, options: VoicevoxInitializeOptions) throws {
-        let resultCode = voicevox_synthesizer_new(openJtalk.ptr, options, &ptr)
+    public init(onnxruntime: Onnxruntime, openJtalk: OpenJtalkRc, options: VoicevoxInitializeOptions) throws {
+        let resultCode = voicevox_synthesizer_new(onnxruntime.ptr, openJtalk.ptr, options, &ptr)
         if resultCode != VOICEVOX_RESULT_OK.rawValue || ptr == nil {
             let message = (NSString(utf8String: voicevox_error_result_to_message(resultCode)) as? String) ?? "-"
             throw MyError.runtimeError("failed to voicevox_synthesizer_new: result=\(resultCode) message=\(message)")

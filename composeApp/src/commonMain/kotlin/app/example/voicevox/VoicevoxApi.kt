@@ -25,7 +25,7 @@ class VoicevoxApi {
     }
 
     suspend fun downloadVvm(vvmFileName: String, filePath: Path) {
-        httpClient.prepareGet("https://github.com/k-yamada/voicevox_fat_resource/raw/main/core/model/${vvmFileName}")
+        httpClient.prepareGet("https://github.com/VOICEVOX/voicevox_vvm/raw/refs/heads/main/vvms/${vvmFileName}")
             .execute { httpResponse ->
                 writeFile(httpResponse, filePath)
             }

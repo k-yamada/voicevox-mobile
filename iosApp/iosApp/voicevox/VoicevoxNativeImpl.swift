@@ -42,10 +42,11 @@ class VoicevoxNativeImpl: NSObject, VoicevoxNative {
     }
 
     private func makeSynthesizer(openJtalkDictDir: String) throws -> Synthesizer {
+        let onnxruntime = try Onnxruntime()
         let openJtalkDictDirURL = URL(fileURLWithPath: openJtalkDictDir)
         let openJtalk = try OpenJtalkRc(openJtalkDic: openJtalkDictDirURL)
         let initializeOptions: VoicevoxInitializeOptions = voicevox_make_default_initialize_options()
-        return try Synthesizer(openJtalk: openJtalk, options: initializeOptions)
+        return try Synthesizer(onnxruntime: onnxruntime, openJtalk: openJtalk, options: initializeOptions)
     }
 
     private func loadVoiceModelIfNeeded(synthesizer: Synthesizer, vvmPath: String) throws {
