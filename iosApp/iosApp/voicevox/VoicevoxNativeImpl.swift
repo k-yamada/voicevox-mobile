@@ -23,21 +23,20 @@ class VoicevoxNativeImpl: NSObject, VoicevoxNative {
         do {
             let synthesizer = try makeSynthesizer(openJtalkDictDir: openJtalkDicDirPath.description())
             try loadVoiceModelIfNeeded(synthesizer: synthesizer, vvmPath: vvmFilePath.description())
-
             let voicevoxStyleId = VoicevoxStyleId(styleId)
 
             // 音声合成
             guard let audioQuery = synthesizer.audioQuery(text: text, styleId: voicevoxStyleId) else {
                 throw MyError.runtimeError("Failed to create audioQuery: \(text)")
             }
-            let wavData = synthesizer.synthesis(audioQuery: audioQuery, styleId: voicevoxStyleId, options: voicevox_make_default_synthesis_options())
+            let wavData = try synthesizer.synthesis(audioQuery: audioQuery, styleId: voicevoxStyleId, options: voicevox_make_default_synthesis_options())
             let wavFileURL = URL(fileURLWithPath: wavFilePath.description())
             try wavData.write(to: wavFileURL)
 
             // 再生
             try await playWavFile(wavFilePath: wavFilePath)
         } catch {
-            print(error.localizedDescription)
+            print(error)
         }
     }
 
@@ -53,7 +52,7 @@ class VoicevoxNativeImpl: NSObject, VoicevoxNative {
         if isVoiceModelLoaded { return }
         let voiceModelURL = URL(fileURLWithPath: vvmPath)
         let voiceModel = try VoiceModel(voiceModelURL: voiceModelURL)
-        synthesizer.loadVoiceModel(voiceModel: voiceModel)
+        try synthesizer.loadVoiceModel(voiceModel: voiceModel)
     }
 
     private func playWavFile(wavFilePath: OkioPath) async throws -> Void {
