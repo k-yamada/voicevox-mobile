@@ -5,12 +5,6 @@ public class VoiceModel {
     var ptr: OpaquePointer?
     var path: String
 
-    var id: VoicevoxVoiceModelId {
-        get {
-            VoicevoxVoiceModelId(ptr!)
-        }
-    }
-
     public init(voiceModelURL: URL) throws {
         let resultCode = voicevox_voice_model_file_open(voiceModelURL.path, &ptr)
         if resultCode != VOICEVOX_RESULT_OK.rawValue || ptr == nil {
