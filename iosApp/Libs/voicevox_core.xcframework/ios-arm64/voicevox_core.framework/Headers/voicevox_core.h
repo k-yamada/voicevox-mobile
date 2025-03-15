@@ -4,6 +4,19 @@
  * 無料で使える中品質なテキスト読み上げソフトウェア、VOICEVOXのコア。
  *
  * <dl>
+ *   <dt id="voicevox-core-availability">
+ *     <a href="#voicevox-core-availability">Availability</a>
+ *   </dt>
+ *
+ *   <dd>
+ *     ヘッダによって次の二つのマクロのうちどちらかが存在する。[リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSでのみ`VOICEVOX_LINK_ONNXRUNTIME`が、他のプラットフォームでは`VOICEVOX_LOAD_ONNXRUNTIME`が存在する。
+ *
+ *     - `VOICEVOX_LOAD_ONNXRUNTIME`: ::voicevox_onnxruntime_load_once と、それに付属するアイテムが利用可能になる。
+ *     - `VOICEVOX_LINK_ONNXRUNTIME`: ::voicevox_onnxruntime_init_once が利用可能になる。またこのマクロが存在するなら、このライブラリはONNX Runtimeをロード時動的リンクする。
+ *   </dd>
+ * </dl>
+ *
+ * <dl>
  *   <dt id="voicevox-core-safety">
  *     <a href="#voicevox-core-safety">⚠️ Safety</a>
  *   </dt>
@@ -44,7 +57,7 @@
 #ifndef VOICEVOX_CORE_INCLUDE_GUARD
 #define VOICEVOX_CORE_INCLUDE_GUARD
 
-/* Generated with cbindgen:0.24.3 */
+/* Generated with cbindgen:0.27.0 */
 
 #ifdef __cplusplus
 #include <cstdint>
@@ -53,8 +66,21 @@
 #include <stdint.h>
 #endif // __cplusplus
 
+#define VOICEVOX_LINK_ONNXRUNTIME
+//#define VOICEVOX_LOAD_ONNXRUNTIME
+
+#if !(defined(VOICEVOX_LINK_ONNXRUNTIME) || defined(VOICEVOX_LOAD_ONNXRUNTIME))
+#error "either `VOICEVOX_LINK_ONNXRUNTIME` or `VOICEVOX_LOAD_ONNXRUNTIME` must be enabled"
+#endif
+
+#if defined(VOICEVOX_LINK_ONNXRUNTIME) && defined(VOICEVOX_LOAD_ONNXRUNTIME)
+#error "`VOICEVOX_LINK_ONNXRUNTIME` or `VOICEVOX_LOAD_ONNXRUNTIME` cannot be enabled at the same time"
+#endif
+
 /**
  * ハードウェアアクセラレーションモードを設定する設定値。
+ *
+ * \orig-impl{VoicevoxAccelerationMode}
  */
 enum VoicevoxAccelerationMode
 #ifdef __cplusplus
@@ -80,6 +106,8 @@ typedef int32_t VoicevoxAccelerationMode;
 
 /**
  * 処理結果を示す結果コード。
+ *
+ * \orig-impl{VoicevoxResultCode,C APIにしか無いものがあることに注意。}
  */
 enum VoicevoxResultCode
 #ifdef __cplusplus
@@ -103,6 +131,10 @@ enum VoicevoxResultCode
    */
   VOICEVOX_RESULT_GPU_SUPPORT_ERROR = 4,
   /**
+   * 推論ライブラリのロードまたは初期化ができなかった
+   */
+  VOICEVOX_RESULT_INIT_INFERENCE_RUNTIME_ERROR = 29,
+  /**
    * スタイルIDに対するスタイルが見つからなかった
    */
   VOICEVOX_RESULT_STYLE_NOT_FOUND_ERROR = 6,
@@ -113,11 +145,11 @@ enum VoicevoxResultCode
   /**
    * 推論に失敗した
    */
-  VOICEVOX_RESULT_INFERENCE_ERROR = 8,
+  VOICEVOX_RESULT_RUN_MODEL_ERROR = 8,
   /**
-   * コンテキストラベル出力に失敗した
+   * 入力テキストの解析に失敗した
    */
-  VOICEVOX_RESULT_EXTRACT_FULL_CONTEXT_LABEL_ERROR = 11,
+  VOICEVOX_RESULT_ANALYZE_TEXT_ERROR = 11,
   /**
    * 無効なutf8文字列が入力された
    */
@@ -142,6 +174,10 @@ enum VoicevoxResultCode
    * ZIP内のファイルが読めなかった
    */
   VOICEVOX_RESULT_READ_ZIP_ENTRY_ERROR = 17,
+  /**
+   * モデルの形式が不正
+   */
+  VOICEVOX_RESULT_INVALID_MODEL_HEADER_ERROR = 28,
   /**
    * すでに読み込まれている音声モデルを読み込もうとした
    */
@@ -185,6 +221,8 @@ typedef int32_t VoicevoxResultCode;
 
 /**
  * ユーザー辞書の単語の種類。
+ *
+ * \orig-impl{VoicevoxUserDictWordType}
  */
 enum VoicevoxUserDictWordType
 #ifdef __cplusplus
@@ -232,31 +270,78 @@ typedef int32_t VoicevoxUserDictWordType;
  * voicevox_open_jtalk_rc_delete(open_jtalk);
  * ```
  * }
+ *
+ * \orig-impl{OpenJtalkRc}
  */
 typedef struct OpenJtalkRc OpenJtalkRc;
+
+/**
+ * ONNX Runtime。
+ *
+ * シングルトンであり、インスタンスは高々一つ。
+ *
+ * ```c
+ * const VoicevoxOnnxruntime *ort1;
+ * voicevox_onnxruntime_load_once(
+ *     voicevox_make_default_load_onnxruntime_options(), &ort1);
+ * const VoicevoxOnnxruntime *ort2 = voicevox_onnxruntime_get();
+ * assert(ort1 == ort2);
+ * ```
+ *
+ * \orig-impl{VoicevoxOnnxruntime}
+ */
+typedef struct VoicevoxOnnxruntime VoicevoxOnnxruntime;
 
 /**
  * 音声シンセサイザ。
  *
  * <b>構築</b>(_construction_)は ::voicevox_synthesizer_new で行い、<b>破棄</b>(_destruction_)は ::voicevox_synthesizer_delete で行う。
+ *
+ * \orig-impl{VoicevoxSynthesizer}
  */
 typedef struct VoicevoxSynthesizer VoicevoxSynthesizer;
 
 /**
  * ユーザー辞書。
+ *
+ * \orig-impl{VoicevoxUserDict}
  */
 typedef struct VoicevoxUserDict VoicevoxUserDict;
 
 /**
- * 音声モデル。
+ * 音声モデルファイル。
  *
  * VVMファイルと対応する。
- * <b>構築</b>(_construction_)は ::voicevox_voice_model_new_from_path で行い、<b>破棄</b>(_destruction_)は ::voicevox_voice_model_delete で行う。
+ * <b>構築</b>(_construction_)は ::voicevox_voice_model_file_open で行い、<b>破棄</b>(_destruction_)は ::voicevox_voice_model_file_delete で行う。
+ *
+ * \orig-impl{VoicevoxVoiceModelFile}
  */
-typedef struct VoicevoxVoiceModel VoicevoxVoiceModel;
+typedef struct VoicevoxVoiceModelFile VoicevoxVoiceModelFile;
+
+#if defined(VOICEVOX_LOAD_ONNXRUNTIME)
+/**
+ * ::voicevox_onnxruntime_load_once のオプション。
+ *
+ * \availability{
+ *   [リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSを除くプラットフォームで利用可能。詳細は<a href="#voicevox-core-availability">ファイルレベルの"Availability"の節</a>を参照。
+ * }
+ *
+ * \no-orig-impl{VoicevoxLoadOnnxruntimeOptions}
+ */
+typedef struct VoicevoxLoadOnnxruntimeOptions {
+  /**
+   * ONNX Runtimeのファイル名（モジュール名）もしくはファイルパスを指定する。
+   *
+   * `dlopen`/[`LoadLibraryExW`](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw)の引数に使われる。デフォルトは ::voicevox_get_onnxruntime_lib_versioned_filename と同じ。
+   */
+  const char *filename;
+} VoicevoxLoadOnnxruntimeOptions;
+#endif
 
 /**
  * ::voicevox_synthesizer_new のオプション。
+ *
+ * \no-orig-impl{VoicevoxInitializeOptions}
  */
 typedef struct VoicevoxInitializeOptions {
   /**
@@ -272,18 +357,24 @@ typedef struct VoicevoxInitializeOptions {
 
 /**
  * 音声モデルID。
+ *
+ * \orig-impl{VoicevoxVoiceModelId}
  */
-typedef const char *VoicevoxVoiceModelId;
+typedef const uint8_t (*VoicevoxVoiceModelId)[16];
 
 /**
  * スタイルID。
  *
- * VOICEVOXにおける、ある<b>話者</b>(_speaker_)のある<b>スタイル</b>(_style_)を指す。
+ * VOICEVOXにおける、ある<i>キャラクター</i>のある<i>スタイル</i>を指す。
+ *
+ * \orig-impl{VoicevoxStyleId}
  */
 typedef uint32_t VoicevoxStyleId;
 
 /**
  * ::voicevox_synthesizer_synthesis のオプション。
+ *
+ * \no-orig-impl{VoicevoxSynthesisOptions}
  */
 typedef struct VoicevoxSynthesisOptions {
   /**
@@ -294,6 +385,8 @@ typedef struct VoicevoxSynthesisOptions {
 
 /**
  * ::voicevox_synthesizer_tts のオプション。
+ *
+ * \no-orig-impl{VoicevoxTtsOptions}
  */
 typedef struct VoicevoxTtsOptions {
   /**
@@ -304,6 +397,8 @@ typedef struct VoicevoxTtsOptions {
 
 /**
  * ユーザー辞書の単語。
+ *
+ * \orig-impl{VoicevoxUserDictWord}
  */
 typedef struct VoicevoxUserDictWord {
   /**
@@ -332,6 +427,127 @@ typedef struct VoicevoxUserDictWord {
 extern "C" {
 #endif // __cplusplus
 
+#if defined(VOICEVOX_LOAD_ONNXRUNTIME)
+/**
+ * ONNX Runtimeの動的ライブラリの、バージョン付きのファイル名。
+ *
+ * WindowsとAndroidでは ::voicevox_get_onnxruntime_lib_unversioned_filename と同じ。
+ *
+ * \availability{
+ *   [リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSを除くプラットフォームで利用可能。詳細は<a href="#voicevox-core-availability">ファイルレベルの"Availability"の節</a>を参照。
+ * }
+ *
+ * \orig-impl{voicevox_get_onnxruntime_lib_versioned_filename}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+const char *voicevox_get_onnxruntime_lib_versioned_filename(void);
+#endif
+
+#if defined(VOICEVOX_LOAD_ONNXRUNTIME)
+/**
+ * ONNX Runtimeの動的ライブラリの、バージョン無しのファイル名。
+ *
+ * \availability{
+ *   [リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSを除くプラットフォームで利用可能。詳細は<a href="#voicevox-core-availability">ファイルレベルの"Availability"の節</a>を参照。
+ * }
+ *
+ * \orig-impl{voicevox_get_onnxruntime_lib_unversioned_filename}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+const char *voicevox_get_onnxruntime_lib_unversioned_filename(void);
+#endif
+
+#if defined(VOICEVOX_LOAD_ONNXRUNTIME)
+/**
+ * デフォルトの ::voicevox_onnxruntime_load_once のオプションを生成する。
+ *
+ * @return デフォルトの ::voicevox_onnxruntime_load_once のオプション
+ *
+ * \availability{
+ *   [リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSを除くプラットフォームで利用可能。詳細は<a href="#voicevox-core-availability">ファイルレベルの"Availability"の節</a>を参照。
+ * }
+ *
+ * \no-orig-impl{voicevox_make_default_load_onnxruntime_options}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+struct VoicevoxLoadOnnxruntimeOptions voicevox_make_default_load_onnxruntime_options(void);
+#endif
+
+/**
+ * ::VoicevoxOnnxruntime のインスタンスが既に作られているならそれを得る。
+ *
+ * 作られていなければ`NULL`を返す。
+ *
+ * @returns ::VoicevoxOnnxruntime のインスタンス
+ *
+ * \orig-impl{voicevox_onnxruntime_get}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+const struct VoicevoxOnnxruntime *voicevox_onnxruntime_get(void);
+
+#if defined(VOICEVOX_LOAD_ONNXRUNTIME)
+/**
+ * ONNX Runtimeをロードして初期化する。
+ *
+ * 一度成功したら、以後は引数を無視して同じ参照を返す。
+ *
+ * @param [in] options オプション
+ * @param [out] out_onnxruntime ::VoicevoxOnnxruntime のインスタンス
+ *
+ * @returns 結果コード
+ *
+ * \availability{
+ *   [リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSを除くプラットフォームで利用可能。詳細は<a href="#voicevox-core-availability">ファイルレベルの"Availability"の節</a>を参照。
+ * }
+ *
+ * \safety{
+ * - `options.filename`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
+ * - `out_onnxruntime`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
+ * }
+ *
+ * \orig-impl{voicevox_onnxruntime_load_once}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+VoicevoxResultCode voicevox_onnxruntime_load_once(struct VoicevoxLoadOnnxruntimeOptions options,
+                                                  const struct VoicevoxOnnxruntime **out_onnxruntime);
+#endif
+
+#if defined(VOICEVOX_LINK_ONNXRUNTIME)
+/**
+ * ONNX Runtimeを初期化する。
+ *
+ * 一度成功したら以後は同じ参照を返す。
+ *
+ * @param [out] out_onnxruntime ::VoicevoxOnnxruntime のインスタンス
+ *
+ * @returns 結果コード
+ *
+ * \availability{
+ *   [リリース](https://github.com/voicevox/voicevox_core/releases)されているライブラリではiOSでのみ利用可能。詳細は<a href="#voicevox-core-availability">ファイルレベルの"Availability"の節</a>を参照。
+ * }
+ *
+ * \safety{
+ * - `out_onnxruntime`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
+ * }
+ *
+ * \orig-impl{voicevox_onnxruntime_init_once}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+VoicevoxResultCode voicevox_onnxruntime_init_once(const struct VoicevoxOnnxruntime **out_onnxruntime);
+#endif
+
 /**
  * ::OpenJtalkRc を<b>構築</b>(_construct_)する。
  *
@@ -353,6 +569,8 @@ extern "C" {
  * - `open_jtalk_dic_dir`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `out_open_jtalk`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_open_jtalk_rc_new}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -368,10 +586,7 @@ VoicevoxResultCode voicevox_open_jtalk_rc_new(const char *open_jtalk_dic_dir,
  * @param [in] open_jtalk Open JTalkのオブジェクト
  * @param [in] user_dict ユーザー辞書
  *
- * \safety{
- * - `open_jtalk`は ::voicevox_open_jtalk_rc_new で得たものでなければならず、また ::voicevox_open_jtalk_rc_delete で解放されていてはいけない。
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
- * }
+ * \orig-impl{voicevox_open_jtalk_rc_use_user_dict}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -380,7 +595,29 @@ VoicevoxResultCode voicevox_open_jtalk_rc_use_user_dict(const struct OpenJtalkRc
                                                         const struct VoicevoxUserDict *user_dict);
 
 /**
+ * 日本語のテキストを解析する。
+ *
+ * 生成したJSON文字列を解放するには ::voicevox_json_free を使う。
+ *
+ * @param [in] open_jtalk Open JTalkのオブジェクト
+ * @param [in] text UTF-8の日本語テキスト
+ * @param [out] output_accent_phrases_json 生成先
+ *
+ * \orig-impl{voicevox_open_jtalk_rc_use_user_dict}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+VoicevoxResultCode voicevox_open_jtalk_rc_analyze(const struct OpenJtalkRc *open_jtalk,
+                                                  const char *text,
+                                                  char **output_accent_phrases_json);
+
+/**
  * ::OpenJtalkRc を<b>破棄</b>(_destruct_)する。
+ *
+ * 破棄対象への他スレッドでのアクセスが存在する場合、それらがすべて終わるのを待ってから破棄する。
+ *
+ * この関数の呼び出し後に破棄し終えた対象にアクセスすると、プロセスを異常終了する。
  *
  * @param [in] open_jtalk 破棄対象
  *
@@ -390,10 +627,7 @@ VoicevoxResultCode voicevox_open_jtalk_rc_use_user_dict(const struct OpenJtalkRc
  * ```
  * }
  *
- * \safety{
- * - `open_jtalk`は ::voicevox_open_jtalk_rc_new で得たものでなければならず、また既にこの関数で解放されていてはいけない。
- * - `open_jtalk`は以後<b>ダングリングポインタ</b>(_dangling pointer_)として扱われなくてはならない。
- * }
+ * \no-orig-impl{voicevox_open_jtalk_rc_delete}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -403,6 +637,8 @@ void voicevox_open_jtalk_rc_delete(struct OpenJtalkRc *open_jtalk);
 /**
  * デフォルトの初期化オプションを生成する
  * @return デフォルト値が設定された初期化オプション
+ *
+ * \no-orig-impl{voicevox_make_default_initialize_options}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -412,6 +648,8 @@ struct VoicevoxInitializeOptions voicevox_make_default_initialize_options(void);
 /**
  * voicevoxのバージョンを取得する。
  * @return SemVerでフォーマットされたバージョン。
+ *
+ * \orig-impl{voicevox_get_version}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -419,7 +657,28 @@ __declspec(dllimport)
 const char *voicevox_get_version(void);
 
 /**
- * VVMファイルから ::VoicevoxVoiceModel を<b>構築</b>(_construct_)する。
+ * AccentPhraseの配列からAudioQueryを作る。
+ *
+ * 生成したJSON文字列を解放するには ::voicevox_json_free を使う。
+ *
+ * @param [in] accent_phrases_json AccentPhraseの配列のJSON文字列
+ * @param [out] output_accent_phrases_json 生成先
+ *
+ * \safety{
+ * - `accent_phrases_json`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
+ * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
+ * }
+ *
+ * \orig-impl{voicevox_audio_query_create_from_accent_phrases}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+VoicevoxResultCode voicevox_audio_query_create_from_accent_phrases(const char *accent_phrases_json,
+                                                                   char **output_audio_query_json);
+
+/**
+ * VVMファイルを開く。
  *
  * @param [in] path vvmファイルへのUTF-8のファイルパス
  * @param [out] out_model 構築先
@@ -430,64 +689,69 @@ const char *voicevox_get_version(void);
  * - `path`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `out_model`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_voice_model_file_open}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
-VoicevoxResultCode voicevox_voice_model_new_from_path(const char *path,
-                                                      struct VoicevoxVoiceModel **out_model);
+VoicevoxResultCode voicevox_voice_model_file_open(const char *path,
+                                                  struct VoicevoxVoiceModelFile **out_model);
 
 /**
- * ::VoicevoxVoiceModel からIDを取得する。
+ * ::VoicevoxVoiceModelFile からIDを取得する。
  *
  * @param [in] model 音声モデル
- *
- * @returns 音声モデルID
+ * @param [out] output_voice_model_id 音声モデルID
  *
  * \safety{
- * - `model`は ::voicevox_voice_model_new_from_path で得たものでなければならず、また ::voicevox_voice_model_delete で解放されていてはいけない。
+ * - `output_voice_model_id`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_voice_model_file_id}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
-VoicevoxVoiceModelId voicevox_voice_model_id(const struct VoicevoxVoiceModel *model);
+void voicevox_voice_model_file_id(const struct VoicevoxVoiceModelFile *model,
+                                  uint8_t (*output_voice_model_id)[16]);
 
 /**
- * ::VoicevoxVoiceModel からメタ情報を取得する。
+ * ::VoicevoxVoiceModelFile からメタ情報を取得する。
+ *
+ * JSONの解放は ::voicevox_json_free で行う。
  *
  * @param [in] model 音声モデル
  *
  * @returns メタ情報のJSON文字列
  *
- * \safety{
- * - `model`は ::voicevox_voice_model_new_from_path で得たものでなければならず、また ::voicevox_voice_model_delete で解放されていてはいけない。
- * - 戻り値の文字列の<b>生存期間</b>(_lifetime_)は次にこの関数が呼ばれるか、`model`が破棄されるまでである。この生存期間を越えて文字列にアクセスしてはならない。
- * }
+ * \orig-impl{voicevox_voice_model_file_create_metas_json}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
-const char *voicevox_voice_model_get_metas_json(const struct VoicevoxVoiceModel *model);
+char *voicevox_voice_model_file_create_metas_json(const struct VoicevoxVoiceModelFile *model);
 
 /**
- * ::VoicevoxVoiceModel を<b>破棄</b>(_destruct_)する。
+ * ::VoicevoxVoiceModelFile を、所有しているファイルディスクリプタを閉じた上で<b>破棄</b>(_destruct_)する。ファイルの削除(_delete_)<b>ではない</b>。
+ *
+ * 破棄対象への他スレッドでのアクセスが存在する場合、それらがすべて終わるのを待ってから破棄する。
+ *
+ * この関数の呼び出し後に破棄し終えた対象にアクセスすると、プロセスを異常終了する。
  *
  * @param [in] model 破棄対象
  *
- * \safety{
- * - `model`は ::voicevox_voice_model_new_from_path で得たものでなければならず、また既にこの関数で解放されていてはいけない。
- * - `model`は以後<b>ダングリングポインタ</b>(_dangling pointer_)として扱われなくてはならない。
- * }
+ * \no-orig-impl{voicevox_voice_model_file_delete}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
-void voicevox_voice_model_delete(struct VoicevoxVoiceModel *model);
+void voicevox_voice_model_file_delete(struct VoicevoxVoiceModelFile *model);
 
 /**
  * ::VoicevoxSynthesizer を<b>構築</b>(_construct_)する。
  *
+ * @param [in] onnxruntime
  * @param [in] open_jtalk Open JTalkのオブジェクト
  * @param [in] options オプション
  * @param [out] out_synthesizer 構築先
@@ -495,26 +759,30 @@ void voicevox_voice_model_delete(struct VoicevoxVoiceModel *model);
  * @returns 結果コード
  *
  * \safety{
- * - `open_jtalk`は ::voicevox_voice_model_new_from_path で得たものでなければならず、また ::voicevox_open_jtalk_rc_new で解放されていてはいけない。
+ * - `onnxruntime`は ::voicevox_onnxruntime_load_once または ::voicevox_onnxruntime_init_once で得たものでなければならない。
  * - `out_synthesizer`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_new}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
-VoicevoxResultCode voicevox_synthesizer_new(const struct OpenJtalkRc *open_jtalk,
+VoicevoxResultCode voicevox_synthesizer_new(const struct VoicevoxOnnxruntime *onnxruntime,
+                                            const struct OpenJtalkRc *open_jtalk,
                                             struct VoicevoxInitializeOptions options,
                                             struct VoicevoxSynthesizer **out_synthesizer);
 
 /**
  * ::VoicevoxSynthesizer を<b>破棄</b>(_destruct_)する。
  *
+ * 破棄対象への他スレッドでのアクセスが存在する場合、それらがすべて終わるのを待ってから破棄する。
+ *
+ * この関数の呼び出し後に破棄し終えた対象にアクセスすると、プロセスを異常終了する。
+ *
  * @param [in] synthesizer 破棄対象
  *
- * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また既にこの関数で解放されていてはいけない。
- * - `synthesizer`は以後<b>ダングリングポインタ</b>(_dangling pointer_)として扱われなくてはならない。
- * }
+ * \no-orig-impl{voicevox_synthesizer_delete}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -529,16 +797,13 @@ void voicevox_synthesizer_delete(struct VoicevoxSynthesizer *synthesizer);
  *
  * @returns 結果コード
  *
- * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
- * - `model`は ::voicevox_voice_model_new_from_path で得たものでなければならず、また ::voicevox_voice_model_delete で解放されていてはいけない。
- * }
+ * \orig-impl{voicevox_synthesizer_load_voice_model}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
 VoicevoxResultCode voicevox_synthesizer_load_voice_model(const struct VoicevoxSynthesizer *synthesizer,
-                                                         const struct VoicevoxVoiceModel *model);
+                                                         const struct VoicevoxVoiceModelFile *model);
 
 /**
  * 音声モデルの読み込みを解除する。
@@ -549,9 +814,10 @@ VoicevoxResultCode voicevox_synthesizer_load_voice_model(const struct VoicevoxSy
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
- * - `model_id`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
+ * - `model_id`は<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_unload_voice_model}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -560,15 +826,27 @@ VoicevoxResultCode voicevox_synthesizer_unload_voice_model(const struct Voicevox
                                                            VoicevoxVoiceModelId model_id);
 
 /**
+ * ::VoicevoxOnnxruntime のインスタンスを得る。
+ *
+ * @param [in] synthesizer 音声シンセサイザ
+ *
+ * @returns ::VoicevoxOnnxruntime のインスタンス
+ *
+ * \orig-impl{voicevox_synthesizer_get_onnxruntime}
+ */
+#ifdef _WIN32
+__declspec(dllimport)
+#endif
+const struct VoicevoxOnnxruntime *voicevox_synthesizer_get_onnxruntime(const struct VoicevoxSynthesizer *synthesizer);
+
+/**
  * ハードウェアアクセラレーションがGPUモードか判定する。
  *
  * @param [in] synthesizer 音声シンセサイザ
  *
  * @returns GPUモードかどうか
  *
- * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
- * }
+ * \orig-impl{voicevox_synthesizer_is_gpu_mode}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -584,9 +862,10 @@ bool voicevox_synthesizer_is_gpu_mode(const struct VoicevoxSynthesizer *synthesi
  * @returns モデルが読み込まれているかどうか
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
- * - `model_id`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
+ * - `model_id`は<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_is_loaded_voice_model}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -603,9 +882,7 @@ bool voicevox_synthesizer_is_loaded_voice_model(const struct VoicevoxSynthesizer
  *
  * @return メタ情報のJSON文字列
  *
- * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
- * }
+ * \orig-impl{voicevox_synthesizer_create_metas_json}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -613,12 +890,13 @@ __declspec(dllimport)
 char *voicevox_synthesizer_create_metas_json(const struct VoicevoxSynthesizer *synthesizer);
 
 /**
- * このライブラリで利用可能なデバイスの情報を、JSONで取得する。
+ * ONNX Runtimeとして利用可能なデバイスの情報を、JSONで取得する。
  *
  * JSONの解放は ::voicevox_json_free で行う。
  *
- * あくまで本ライブラリが対応しているデバイスの情報であることに注意。GPUが使える環境ではなかったとしても`cuda`や`dml`は`true`を示しうる。
+ * あくまでONNX Runtimeが対応しているデバイスの情報であることに注意。GPUが使える環境ではなかったとしても`cuda`や`dml`は`true`を示しうる。
  *
+ * @param [in] onnxruntime
  * @param [out] output_supported_devices_json サポートデバイス情報のJSON文字列
  *
  * @returns 結果コード
@@ -626,18 +904,22 @@ char *voicevox_synthesizer_create_metas_json(const struct VoicevoxSynthesizer *s
  * \example{
  * ```c
  * char *supported_devices;
- * VoicevoxResultCode result = voicevox_create_supported_devices_json(&supported_devices);
+ * VoicevoxResultCode result = voicevox_onnxruntime_create_supported_devices_json(onnxruntime, &supported_devices);
  * ```
  * }
  *
  * \safety{
+ * - `onnxruntime`は ::voicevox_onnxruntime_load_once または ::voicevox_onnxruntime_init_once で得たものでなければならない。
  * - `output_supported_devices_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_onnxruntime_create_supported_devices_json}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
-VoicevoxResultCode voicevox_create_supported_devices_json(char **output_supported_devices_json);
+VoicevoxResultCode voicevox_onnxruntime_create_supported_devices_json(const struct VoicevoxOnnxruntime *onnxruntime,
+                                                                      char **output_supported_devices_json);
 
 /**
  * AquesTalk風記法から、AudioQueryをJSONとして生成する。
@@ -661,10 +943,11 @@ VoicevoxResultCode voicevox_create_supported_devices_json(char **output_supporte
  * }
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `kana`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_create_audio_query_from_kana}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -678,6 +961,9 @@ VoicevoxResultCode voicevox_synthesizer_create_audio_query_from_kana(const struc
  * 日本語テキストから、AudioQueryをJSONとして生成する。
  *
  * 生成したJSON文字列を解放するには ::voicevox_json_free を使う。
+ *
+ * ::voicevox_synthesizer_create_accent_phrases と ::voicevox_audio_query_create_from_accent_phrases
+ * が一体になったショートハンド。詳細は[テキスト音声合成の流れ]を参照。
  *
  * @param [in] synthesizer 音声シンセサイザ
  * @param [in] text UTF-8の日本語テキスト
@@ -696,10 +982,13 @@ VoicevoxResultCode voicevox_synthesizer_create_audio_query_from_kana(const struc
  * }
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `text`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_create_audio_query}
+ *
+ * [テキスト音声合成の流れ]: https://github.com/VOICEVOX/voicevox_core/blob/main/docs/guide/user/tts-process.md
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -732,10 +1021,11 @@ VoicevoxResultCode voicevox_synthesizer_create_audio_query(const struct Voicevox
  * }
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `kana`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_create_accent_phrases_from_kana}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -749,6 +1039,9 @@ VoicevoxResultCode voicevox_synthesizer_create_accent_phrases_from_kana(const st
  * 日本語テキストから、AccentPhrase (アクセント句)の配列をJSON形式で生成する。
  *
  * 生成したJSON文字列を解放するには ::voicevox_json_free を使う。
+ *
+ * ::voicevox_open_jtalk_rc_analyze と ::voicevox_synthesizer_replace_mora_data
+ * が一体になったショートハンド。詳細は[テキスト音声合成の流れ]を参照。
  *
  * @param [in] synthesizer 音声シンセサイザ
  * @param [in] text UTF-8の日本語テキスト
@@ -767,10 +1060,13 @@ VoicevoxResultCode voicevox_synthesizer_create_accent_phrases_from_kana(const st
  * }
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `text`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_create_accent_phrases}
+ *
+ * [テキスト音声合成の流れ]: https://github.com/VOICEVOX/voicevox_core/blob/main/docs/guide/user/tts-process.md
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -785,6 +1081,9 @@ VoicevoxResultCode voicevox_synthesizer_create_accent_phrases(const struct Voice
  *
  * 生成したJSON文字列を解放するには ::voicevox_json_free を使う。
  *
+ * ::voicevox_synthesizer_replace_phoneme_length と ::voicevox_synthesizer_replace_mora_pitch
+ * が一体になったショートハンド。詳細は[テキスト音声合成の流れ]を参照。
+ *
  * @param [in] synthesizer 音声シンセサイザ
  * @param [in] accent_phrases_json AccentPhraseの配列のJSON文字列
  * @param [in] style_id スタイルID
@@ -793,10 +1092,13 @@ VoicevoxResultCode voicevox_synthesizer_create_accent_phrases(const struct Voice
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `accent_phrases_json`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_replace_mora_data}
+ *
+ * [テキスト音声合成の流れ]: https://github.com/VOICEVOX/voicevox_core/blob/main/docs/guide/user/tts-process.md
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -819,10 +1121,11 @@ VoicevoxResultCode voicevox_synthesizer_replace_mora_data(const struct VoicevoxS
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `accent_phrases_json`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_replace_phoneme_length}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -845,10 +1148,11 @@ VoicevoxResultCode voicevox_synthesizer_replace_phoneme_length(const struct Voic
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `accent_phrases_json`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_audio_query_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_replace_mora_pitch}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -861,6 +1165,8 @@ VoicevoxResultCode voicevox_synthesizer_replace_mora_pitch(const struct Voicevox
 /**
  * デフォルトの `voicevox_synthesizer_synthesis` のオプションを生成する
  * @return デフォルト値が設定された `voicevox_synthesizer_synthesis` のオプション
+ *
+ * \no-orig-impl{voicevox_make_default_synthesis_options}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -882,11 +1188,12 @@ struct VoicevoxSynthesisOptions voicevox_make_default_synthesis_options(void);
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `audio_query_json`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_wav_length`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * - `output_wav`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_synthesis}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -901,6 +1208,8 @@ VoicevoxResultCode voicevox_synthesizer_synthesis(const struct VoicevoxSynthesiz
 /**
  * デフォルトのテキスト音声合成オプションを生成する
  * @return テキスト音声合成オプション
+ *
+ * \no-orig-impl{voicevox_make_default_tts_options}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -922,11 +1231,12 @@ struct VoicevoxTtsOptions voicevox_make_default_tts_options(void);
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `kana`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_wav_length`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * - `output_wav`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_tts_from_kana}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -943,6 +1253,9 @@ VoicevoxResultCode voicevox_synthesizer_tts_from_kana(const struct VoicevoxSynth
  *
  * 生成したWAVデータを解放するには ::voicevox_wav_free を使う。
  *
+ * ::voicevox_synthesizer_create_audio_query と ::voicevox_synthesizer_synthesis
+ * が一体になったショートハンド。詳細は[テキスト音声合成の流れ]を参照。
+ *
  * @param [in] synthesizer
  * @param [in] text UTF-8の日本語テキスト
  * @param [in] style_id スタイルID
@@ -953,11 +1266,14 @@ VoicevoxResultCode voicevox_synthesizer_tts_from_kana(const struct VoicevoxSynth
  * @returns 結果コード
  *
  * \safety{
- * - `synthesizer`は ::voicevox_synthesizer_new で得たものでなければならず、また ::voicevox_synthesizer_delete で解放されていてはいけない。
  * - `text`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_wav_length`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * - `output_wav`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_synthesizer_tts}
+ *
+ * [テキスト音声合成の流れ]: https://github.com/VOICEVOX/voicevox_core/blob/main/docs/guide/user/tts-process.md
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -976,7 +1292,10 @@ VoicevoxResultCode voicevox_synthesizer_tts(const struct VoicevoxSynthesizer *sy
  *
  * \safety{
  * - `json`は以下のAPIで得られたポインタでなくてはいけない。
- *     - ::voicevox_create_supported_devices_json
+ *     - ::voicevox_audio_query_create_from_accent_phrases
+ *     - ::voicevox_onnxruntime_create_supported_devices_json
+ *     - ::voicevox_voice_model_file_create_metas_json
+ *     - ::voicevox_open_jtalk_rc_analyze
  *     - ::voicevox_synthesizer_create_metas_json
  *     - ::voicevox_synthesizer_create_audio_query
  *     - ::voicevox_synthesizer_create_accent_phrases
@@ -988,6 +1307,8 @@ VoicevoxResultCode voicevox_synthesizer_tts(const struct VoicevoxSynthesizer *sy
  * - `json`は<a href="#voicevox-core-safety">読み込みと書き込みについて有効</a>でなければならない。
  * - `json`は以後<b>ダングリングポインタ</b>(_dangling pointer_)として扱われなくてはならない。
  * }
+ *
+ * \no-orig-impl{voicevox_json_free}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1006,6 +1327,8 @@ void voicevox_json_free(char *json);
  * - `wav`は<a href="#voicevox-core-safety">読み込みと書き込みについて有効</a>でなければならない。
  * - `wav`は以後<b>ダングリングポインタ</b>(_dangling pointer_)として扱われなくてはならない。
  * }
+ *
+ * \no-orig-impl{voicevox_wav_free}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1033,6 +1356,8 @@ void voicevox_wav_free(uint8_t *wav);
  * assert(strcmp(actual, EXPECTED) == 0);
  * ```
  * }
+ *
+ * \no-orig-impl{voicevox_error_result_to_message}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1044,18 +1369,24 @@ const char *voicevox_error_result_to_message(VoicevoxResultCode result_code);
  *
  * @param [in] surface 表記
  * @param [in] pronunciation 読み
+ * @param [in] accent_type アクセント型
  * @returns ::VoicevoxUserDictWord
+ *
+ * \orig-impl{voicevox_user_dict_word_make}
  */
 #ifdef _WIN32
 __declspec(dllimport)
 #endif
 struct VoicevoxUserDictWord voicevox_user_dict_word_make(const char *surface,
-                                                         const char *pronunciation);
+                                                         const char *pronunciation,
+                                                         uintptr_t accent_type);
 
 /**
  * ユーザー辞書をb>構築</b>(_construct_)する。
  *
  * @returns ::VoicevoxUserDict
+ *
+ * \orig-impl{voicevox_user_dict_new}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1070,9 +1401,10 @@ struct VoicevoxUserDict *voicevox_user_dict_new(void);
  * @returns 結果コード
  *
  * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
  * - `dict_path`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_user_dict_load}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1092,10 +1424,11 @@ VoicevoxResultCode voicevox_user_dict_load(const struct VoicevoxUserDict *user_d
  * @param user_dict は有効な :VoicevoxUserDict のポインタであること
  *
  * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
  * - `word->surface`と`word->pronunciation`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `output_word_uuid`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_user_dict_add_word}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1113,10 +1446,11 @@ VoicevoxResultCode voicevox_user_dict_add_word(const struct VoicevoxUserDict *us
  * @returns 結果コード
  *
  * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
  * - `word_uuid`は<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * - `word->surface`と`word->pronunciation`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_user_dict_update_word}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1133,9 +1467,10 @@ VoicevoxResultCode voicevox_user_dict_update_word(const struct VoicevoxUserDict 
  * @returns 結果コード
  *
  * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
  * - `word_uuid`は<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_user_dict_remove_word}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1153,9 +1488,10 @@ VoicevoxResultCode voicevox_user_dict_remove_word(const struct VoicevoxUserDict 
  * @returns 結果コード
  *
  * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
  * - `output_json`は<a href="#voicevox-core-safety">書き込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_user_dict_to_json}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1170,9 +1506,7 @@ VoicevoxResultCode voicevox_user_dict_to_json(const struct VoicevoxUserDict *use
  * @param [in] other_dict インポートするユーザー辞書
  * @returns 結果コード
  *
- * \safety{
- * - `user_dict`と`other_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
- * }
+ * \orig-impl{voicevox_user_dict_import}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1187,9 +1521,10 @@ VoicevoxResultCode voicevox_user_dict_import(const struct VoicevoxUserDict *user
  * @param [in] path 保存先のファイルパス
  *
  * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また ::voicevox_user_dict_delete で解放されていてはいけない。
  * - `path`はヌル終端文字列を指し、かつ<a href="#voicevox-core-safety">読み込みについて有効</a>でなければならない。
  * }
+ *
+ * \orig-impl{voicevox_user_dict_save}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1200,11 +1535,13 @@ VoicevoxResultCode voicevox_user_dict_save(const struct VoicevoxUserDict *user_d
 /**
  * ユーザー辞書を<b>破棄</b>(_destruct_)する。
  *
+ * 破棄対象への他スレッドでのアクセスが存在する場合、それらがすべて終わるのを待ってから破棄する。
+ *
+ * この関数の呼び出し後に破棄し終えた対象にアクセスすると、プロセスを異常終了する。
+ *
  * @param [in] user_dict 破棄対象
  *
- * \safety{
- * - `user_dict`は ::voicevox_user_dict_new で得たものでなければならず、また既にこの関数で解放されていてはいけない。
- * }
+ * \no-orig-impl{voicevox_user_dict_delete}
  */
 #ifdef _WIN32
 __declspec(dllimport)
@@ -1212,7 +1549,7 @@ __declspec(dllimport)
 void voicevox_user_dict_delete(struct VoicevoxUserDict *user_dict);
 
 #ifdef __cplusplus
-} // extern "C"
-#endif // __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 
-#endif /* VOICEVOX_CORE_INCLUDE_GUARD */
+#endif  /* VOICEVOX_CORE_INCLUDE_GUARD */

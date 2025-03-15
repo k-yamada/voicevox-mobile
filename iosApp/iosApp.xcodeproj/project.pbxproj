@@ -11,16 +11,17 @@
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
-		E5222E4B2D817BA400C3780A /* onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E4A2D817B3600C3780A /* onnxruntime.xcframework */; };
-		E5222E4C2D817BA400C3780A /* onnxruntime.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E4A2D817B3600C3780A /* onnxruntime.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		E5222E4D2D817BA400C3780A /* voicevox_core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E492D817B3600C3780A /* voicevox_core.xcframework */; };
-		E5222E4E2D817BA400C3780A /* voicevox_core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E492D817B3600C3780A /* voicevox_core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E5222E522D81809000C3780A /* VoicevoxNativeImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E512D81808B00C3780A /* VoicevoxNativeImpl.swift */; };
 		E5222E562D818C3600C3780A /* Synthesizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E552D818C3000C3780A /* Synthesizer.swift */; };
 		E5222E592D818C5000C3780A /* OpenJtalkRc.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E582D818C5000C3780A /* OpenJtalkRc.swift */; };
 		E5222E5A2D818C5000C3780A /* AudioQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E572D818C5000C3780A /* AudioQuery.swift */; };
 		E5222E5C2D818C9900C3780A /* VoiceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E5B2D818C9900C3780A /* VoiceModel.swift */; };
 		E5222E5E2D818E9400C3780A /* MyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E5D2D818E9400C3780A /* MyError.swift */; };
+		E5222E612D81A10000C3780A /* voicevox_core.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E5F2D81A0E800C3780A /* voicevox_core.xcframework */; };
+		E5222E622D81A10000C3780A /* voicevox_core.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E5F2D81A0E800C3780A /* voicevox_core.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E5222E632D81A10000C3780A /* voicevox_onnxruntime.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E602D81A0E800C3780A /* voicevox_onnxruntime.xcframework */; };
+		E5222E642D81A10000C3780A /* voicevox_onnxruntime.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E5222E602D81A0E800C3780A /* voicevox_onnxruntime.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E5222E662D81A1A300C3780A /* Onnxruntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5222E652D81A19F00C3780A /* Onnxruntime.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,8 +31,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				E5222E4C2D817BA400C3780A /* onnxruntime.xcframework in Embed Frameworks */,
-				E5222E4E2D817BA400C3780A /* voicevox_core.xcframework in Embed Frameworks */,
+				E5222E642D81A10000C3780A /* voicevox_onnxruntime.xcframework in Embed Frameworks */,
+				E5222E622D81A10000C3780A /* voicevox_core.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -46,14 +47,15 @@
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
-		E5222E492D817B3600C3780A /* voicevox_core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = voicevox_core.xcframework; sourceTree = "<group>"; };
-		E5222E4A2D817B3600C3780A /* onnxruntime.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = onnxruntime.xcframework; sourceTree = "<group>"; };
 		E5222E512D81808B00C3780A /* VoicevoxNativeImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoicevoxNativeImpl.swift; sourceTree = "<group>"; };
 		E5222E552D818C3000C3780A /* Synthesizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Synthesizer.swift; sourceTree = "<group>"; };
 		E5222E572D818C5000C3780A /* AudioQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioQuery.swift; sourceTree = "<group>"; };
 		E5222E582D818C5000C3780A /* OpenJtalkRc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenJtalkRc.swift; sourceTree = "<group>"; };
 		E5222E5B2D818C9900C3780A /* VoiceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceModel.swift; sourceTree = "<group>"; };
 		E5222E5D2D818E9400C3780A /* MyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyError.swift; sourceTree = "<group>"; };
+		E5222E5F2D81A0E800C3780A /* voicevox_core.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = voicevox_core.xcframework; sourceTree = "<group>"; };
+		E5222E602D81A0E800C3780A /* voicevox_onnxruntime.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = voicevox_onnxruntime.xcframework; sourceTree = "<group>"; };
+		E5222E652D81A19F00C3780A /* Onnxruntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onnxruntime.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,8 +63,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5222E4B2D817BA400C3780A /* onnxruntime.xcframework in Frameworks */,
-				E5222E4D2D817BA400C3780A /* voicevox_core.xcframework in Frameworks */,
+				E5222E632D81A10000C3780A /* voicevox_onnxruntime.xcframework in Frameworks */,
+				E5222E612D81A10000C3780A /* voicevox_core.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,8 +130,8 @@
 		E5222E482D817B2D00C3780A /* Libs */ = {
 			isa = PBXGroup;
 			children = (
-				E5222E492D817B3600C3780A /* voicevox_core.xcframework */,
-				E5222E4A2D817B3600C3780A /* onnxruntime.xcframework */,
+				E5222E5F2D81A0E800C3780A /* voicevox_core.xcframework */,
+				E5222E602D81A0E800C3780A /* voicevox_onnxruntime.xcframework */,
 			);
 			path = Libs;
 			sourceTree = "<group>";
@@ -137,6 +139,7 @@
 		E5222E502D81808300C3780A /* voicevox */ = {
 			isa = PBXGroup;
 			children = (
+				E5222E652D81A19F00C3780A /* Onnxruntime.swift */,
 				E5222E5B2D818C9900C3780A /* VoiceModel.swift */,
 				E5222E572D818C5000C3780A /* AudioQuery.swift */,
 				E5222E582D818C5000C3780A /* OpenJtalkRc.swift */,
@@ -246,6 +249,7 @@
 			files = (
 				E5222E562D818C3600C3780A /* Synthesizer.swift in Sources */,
 				E5222E5C2D818C9900C3780A /* VoiceModel.swift in Sources */,
+				E5222E662D81A1A300C3780A /* Onnxruntime.swift in Sources */,
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				E5222E522D81809000C3780A /* VoicevoxNativeImpl.swift in Sources */,
 				E5222E5E2D818E9400C3780A /* MyError.swift in Sources */,
